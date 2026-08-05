@@ -1,6 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { NotificationService } from './notification.service';
-import { EventPattern, Payload } from '@nestjs/microservices';
+import { EventPattern, MessagePattern, Payload } from '@nestjs/microservices';
 import type Notification from '@app/contracts/models/dtos/notification/notification.dto';
 
 @Controller()
@@ -19,5 +19,18 @@ export class NotificationController {
     await this.notificationService.saveNotifications(payload);
 
     await this.notificationService.sendPushNotification(payload);
+  }
+
+  @MessagePattern('notifications.check')
+  async getNotifications(
+    @Payload() payload: { userId: string, page: number, limit: number },
+  ) {
+    console.log(payload.userId);
+
+    if (!payload.userId?.length) {
+      return [];
+    }
+
+    return this.notificationService.getNotifications(payload.userId);
   }
 }

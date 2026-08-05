@@ -15,7 +15,7 @@ export class NotificationService {
 
   async sendPushNotification(payload: NotificationDto) {
     try {
-      await this.redis.publish('notifications:event',JSON.stringify(payload));
+      await this.redis.publish('notifications:event', JSON.stringify(payload));
       this.logger.debug(`Push notification sent to ${payload.recipientIds.length} users for room ${payload.roomId}`);
     } catch (error) {
       this.logger.error('Error sending push notification', error);
@@ -42,5 +42,30 @@ export class NotificationService {
       this.logger.error('Error saving notifications to DB', error);
       throw error;
     }
+  }
+
+  async getNotifications(userId: string, page: number = 1, limit: number = 20) {
+    const skip = (page - 1) * limit;
+
+    const notifications = await this.notificationModel
+      .find({ recipientId: userId })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean()
+      .exec();
+
+    const total = await this.notificationModel.countDocuments({ recipientId: userId });
+
+    return {
+      data: notifications,
+      meta: {
+        total,
+        page,
+        limit,
+        lastPage: Math.ceil(total / limit),
+      },
+    };
+
   }
 }
