@@ -18,7 +18,21 @@ export class NotificationController {
 
     await this.notificationService.saveNotifications(payload);
 
-    await this.notificationService.sendPushNotification(payload);
+    await this.notificationService.sendPushNotification({ ...payload, type: 'notification.send' });
+  }
+
+  @EventPattern('notification.read')
+  async handleSeenNotification(@Payload() payload: { roomId: string, userId: string, messageIds: string[] }) {
+
+    console.log(payload)
+
+    if (!payload.messageIds || payload.messageIds.length === 0) {
+      return;
+    }
+
+    await this.notificationService.seenNotifications(payload);
+
+    await this.notificationService.sendPushNotification({ ...payload, type: 'notification.read' });
   }
 
   @MessagePattern('notifications.check')

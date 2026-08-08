@@ -13,10 +13,9 @@ export class NotificationService {
 
   private readonly logger = new Logger(NotificationService.name);
 
-  async sendPushNotification(payload: NotificationDto) {
+  async sendPushNotification(payload: any) {
     try {
       await this.redis.publish('notifications:event', JSON.stringify(payload));
-      this.logger.debug(`Push notification sent to ${payload.recipientIds.length} users for room ${payload.roomId}`);
     } catch (error) {
       this.logger.error('Error sending push notification', error);
     }
@@ -66,6 +65,14 @@ export class NotificationService {
         lastPage: Math.ceil(total / limit),
       },
     };
+
+  }
+
+  async seenNotifications(payload: { roomId: string; userId: string; messageIds: string[]; }) {
+    await this.notificationModel.updateMany({
+      messageId: { $in: payload.messageIds }
+    }, { $set: { isRead: true } });
+
 
   }
 }
