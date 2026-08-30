@@ -5,6 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { NotificationSchema, Notification } from './models/concrete/notification';
+import { OtpModule } from './otp/otp.module';
 import Redis from 'ioredis';
 
 @Module({
@@ -33,7 +34,8 @@ import Redis from 'ioredis';
     MongooseModule.forRoot(process.env.MONGO_STRING?.toString() ?? '', { dbName: 'message_notificationdb' }),
     MongooseModule.forFeature([
       { name: Notification.name, schema: NotificationSchema }
-    ])
+    ]),
+    OtpModule
   ],
   controllers: [NotificationController],
   providers: [NotificationService,
